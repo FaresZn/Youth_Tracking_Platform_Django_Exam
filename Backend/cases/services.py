@@ -1,6 +1,5 @@
 # cases/services.py
 import requests
-import json
 from .models import CaseFile, CaseTimelineLog
 
 class LocalLLMService:
@@ -8,7 +7,7 @@ class LocalLLMService:
     Handles local execution pipelines using an offline inference engine (e.g., Ollama).
     """
     OLLAMA_URL = "http://localhost:11434/api/generate"
-    MODEL_NAME = "llama3" # Or your locally pulled model like mistral/gemma
+    MODEL_NAME = "llama3"
 
     @classmethod
     def analyze_case_vulnerability(cls, case_file_id):
@@ -43,7 +42,7 @@ class LocalLLMService:
                 result = response.json()
                 ai_analysis = result.get("response", "").strip()
 
-                # 3. ✨ FIXED: Log using your actual model attributes (`system_notes`)
+                # 3. Save into historical log array logs (Related name matches model: timeline_logs)
                 CaseTimelineLog.objects.create(
                     case_file=case,
                     previous_state=case.status,
@@ -51,11 +50,10 @@ class LocalLLMService:
                     system_notes=f"AI Vulnerability Assessment:\n{ai_analysis}"
                 )
                 
-                # Optional: Update case status if risk is determined critical
-                if "High" in ai_analysis and case.status == "INTAKE":
-                    case.status = "ASSESSED" # updates lifecycle stage automatically
+                # Let your model's native save hard-coded safety rule auto-assess status logic handle updates
+                if "High" in ai_analysis and case.status == 'INTAKE':
+                    case.status = 'ASSESSED'
                     case.save()
                     
         except requests.exceptions.RequestException as e:
-            # Prevent app crash if local engine is down, fall back gracefully
             print(f"Local LLM connection error: {e}")

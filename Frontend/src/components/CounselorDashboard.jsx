@@ -1,7 +1,6 @@
-// src/components/CounselorDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Search, Eye, Calendar, RefreshCw, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Shield, Search, Eye, Calendar, RefreshCw, Clock } from 'lucide-react';
 
 export default function CounselorDashboard() {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ export default function CounselorDashboard() {
       return;
     }
 
-    // Concurrent pipeline synchronization
     Promise.all([fetchCounselorCases(token), fetchCalendarSchedule(token)])
       .finally(() => setLoading(false));
   }, [navigate]);
@@ -70,11 +68,18 @@ export default function CounselorDashboard() {
     }
   };
 
-  // Helper utility to flag risk parameters dynamically based on tracking layers
   const getRiskBadge = (score) => {
     const numScore = Number(score || 0);
-    if (numScore >= 4) return <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 border border-rose-100 text-rose-700 uppercase">Critical Priority</span>;
-    if (numScore >= 2) return <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 border border-amber-100 text-amber-700 uppercase">Elevated Risk</span>;
+    
+    // Check for High Risk (Assuming >= 4 is critical/high based on your logic)
+    if (numScore >= 4) {
+      return <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 border border-rose-100 text-rose-700 uppercase">Critical Priority</span>;
+    }
+    // Check for Elevated Risk
+    if (numScore >= 2) {
+      return <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 border border-amber-100 text-amber-700 uppercase">Elevated Risk</span>;
+    }
+    // Default to Stable
     return <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 border border-emerald-100 text-emerald-700 uppercase">Stable</span>;
   };
 
@@ -87,6 +92,14 @@ export default function CounselorDashboard() {
     const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const formatScheduleNode = (isoString) => {
+    if (!isoString) return { dateStr: '--/--/----', timeStr: '--:--' };
+    const dateObj = new Date(isoString);
+    const dateStr = dateObj.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+    const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    return { dateStr, timeStr };
+  };
 
   if (loading) {
     return (
@@ -101,8 +114,6 @@ export default function CounselorDashboard() {
 
   return (
     <div className="min-h-screen bg-[#fbfcfa] font-sans text-stone-900 px-6 py-8 md:px-12">
-      
-      {/* Upper Control Bar Layout */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-8 border-b border-stone-200/60 space-y-4 md:space-y-0">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md">Counselor Core Station</span>
@@ -114,13 +125,8 @@ export default function CounselorDashboard() {
         </div>
       </div>
 
-      {/* Main Two-Column Workflow Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-8">
-        
-        {/* Left Side (3 Columns): Cases Discovery Master Listing View */}
         <div className="lg:col-span-3 space-y-6">
-          
-          {/* Dynamic Action Filter Bar Ribbon */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-white border border-stone-200/60 p-4 rounded-xl shadow-xs">
             <div className="relative flex-1">
               <Search className="absolute top-1/2 left-3 transform -translate-y-1/2 text-stone-400 w-4 h-4" />
@@ -132,7 +138,6 @@ export default function CounselorDashboard() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
             <div className="flex items-center space-x-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Pipeline State:</span>
               <select
@@ -149,7 +154,6 @@ export default function CounselorDashboard() {
             </div>
           </div>
 
-          {/* Cases Master Data Table Frame Container */}
           <div className="bg-white border border-stone-200/70 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -165,16 +169,15 @@ export default function CounselorDashboard() {
                 <tbody className="divide-y divide-stone-100 text-xs font-medium text-stone-700">
                   {filteredCases.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="py-12 text-center text-stone-400 bg-stone-50/5 font-semibold">
-                        No telemetry case records matched your current parameters.
-                      </td>
+                      <td colSpan="5" className="py-12 text-center text-stone-400 bg-stone-50/5 font-semibold">No telemetry case records matched your current parameters.</td>
                     </tr>
                   ) : (
                     filteredCases.map((c) => (
+                      
                       <tr key={c.case_id || c.id} className="hover:bg-stone-50/20 transition duration-100">
                         <td className="py-4 px-6 font-mono font-bold text-slate-900 text-[13px]">{c.anonymous_id || "N/A"}</td>
                         <td className="py-4 px-5 text-stone-600 font-semibold">{c.region || "Unknown Region"}</td>
-                        <td className="py-4 px-5">{getRiskBadge(c.metrics?.isolation_score)}</td>
+                        <td className="py-4 px-5">{getRiskBadge(c.isolation_score)}</td>
                         <td className="py-4 px-5">
                           <select
                             className={`text-[11px] font-bold tracking-wide uppercase px-2 py-1 rounded border outline-none bg-white transition duration-150 ${
@@ -195,7 +198,7 @@ export default function CounselorDashboard() {
                         <td className="py-4 px-6 text-right">
                           <button
                             type="button"
-                            onClick={() => navigate(`/counselor/cases/${c.case_id}`)}
+                            onClick={() => navigate(`/counselor/cases/${c.case_id || c.id}`)}
                             className="inline-flex items-center space-x-1 px-3 py-1.5 bg-slate-900 hover:bg-purple-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition"
                           >
                             <Eye className="w-3 h-3" />
@@ -211,7 +214,6 @@ export default function CounselorDashboard() {
           </div>
         </div>
 
-        {/* Right Side (1 Column): Counselor Calendar Agenda Stream Widget */}
         <div className="bg-white border border-stone-200/70 p-6 rounded-2xl shadow-sm flex flex-col space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-stone-100">
             <h2 className="text-sm font-black text-slate-900 flex items-center space-x-2">
@@ -223,11 +225,6 @@ export default function CounselorDashboard() {
               onClick={() => { setLoading(true); fetchCalendarSchedule(localStorage.getItem('authToken')).finally(() => setLoading(false)); }}
             />
           </div>
-
-          <p className="text-[11px] text-stone-400 leading-relaxed font-semibold">
-            Chronological log of pending diagnostic sessions set up across your active case files.
-          </p>
-
           <div className="flex-1 space-y-3 overflow-y-auto max-h-[360px] pr-1">
             {meetings.length === 0 ? (
               <div className="text-center py-12 text-stone-400 font-medium space-y-2">
@@ -236,29 +233,24 @@ export default function CounselorDashboard() {
               </div>
             ) : (
               meetings.map((m) => {
-                const startTimeStr = m.start_time || m.start;
-                const startHour = startTimeStr 
-                  ? new Date(startTimeStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                  : '--:--';
+                const { dateStr, timeStr } = formatScheduleNode(m.start_time || m.start);
                 return (
-                  <div key={m.id} className="p-3 bg-stone-50 border border-stone-200/60 rounded-xl space-y-1 hover:border-purple-200/70 transition">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider font-mono text-purple-700">{startHour}</span>
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-tight">Session node</span>
+                  <div key={m.id} className="p-3 bg-stone-50 border border-stone-200/60 rounded-xl space-y-2 hover:border-purple-200/70 transition">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-stone-200/70 text-stone-600 rounded">{dateStr}</span>
+                        <span className="text-[10px] font-bold tracking-wider font-mono text-purple-700">{timeStr}</span>
+                      </div>
                     </div>
                     <h3 className="text-xs font-bold text-slate-800 truncate">{m.title || "Untitled Meeting"}</h3>
-                    <p className="text-[10px] font-mono font-semibold text-stone-500 truncate">
-                      Target: {m.anonymous_id || m.case_id || "N/A"}
-                    </p>
+                    <p className="text-[10px] font-mono font-semibold text-stone-500 truncate">Target: {m.anonymous_id || m.case_id || "N/A"}</p>
                   </div>
                 );
               })
             )}
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }

@@ -19,9 +19,13 @@ class CaseFileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'beneficiary', 'beneficiary_id', 'status', 
             'monthly_absence_count', 'grade_average_delta', 
-            'missed_counseling_appointments', 'isolation_indicator_score', 
+            'missed_counseling_appointments', 'isolation_score', 
             'raw_intake_notes', 'updated_at'
         ]
+    
+    def get_isolation_score(self, obj):
+        # Return the field from the model
+        return obj.isolation_indicator_score
 
     def to_representation(self, instance):
         """
@@ -49,7 +53,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beneficiary
         fields = [
-            'id', 'anonymous_id', 'region', 'age', 'status', 
+            'id', 'anonymous_id', 'region', 'age', 'status',
             'raw_intake_notes', 'ai_analysis', 'metrics', 'scheduled_meetings'
         ]
 
@@ -57,7 +61,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
         # Gracefully handle matching database names to frontend keys
         return {
             'absences': obj.monthly_absences,
-            'isolation_score': obj.social_isolation_index,
+            'isolation_indicator_score': obj.social_isolation_index,
             'grade_delta': obj.grade_average_variance,
             'missed_appointments': obj.missed_core_tasks
         }

@@ -23,7 +23,6 @@ export default function CaseDetailWorkspace() {
   const fetchComprehensiveCaseMetrics = async () => {
     const token = localStorage.getItem('authToken');
     try {
-      // Dynamic URL target matching your functional routes
       const response = await fetch(`http://127.0.0.1:8000/api/cases/counselor/cases/detail/${id}/`, {
         headers: { 
           'Authorization': `Bearer ${token}`, 
@@ -47,7 +46,7 @@ export default function CaseDetailWorkspace() {
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
     if (!meetingDate || !meetingTime) {
-      alert("Please specify a valid scheduling calendar timeline targets.");
+      alert("Please specify valid scheduling calendar timeline targets.");
       return;
     }
 
@@ -63,6 +62,7 @@ export default function CaseDetailWorkspace() {
     const combinedEnd = `${meetingDate}T${endHour}:${minutes}:00`;
 
     try {
+      // Sending POST directly to the now-supported detail route configuration mapping
       const response = await fetch(`http://127.0.0.1:8000/api/cases/counselor/cases/detail/${id}/`, {
         method: 'POST',
         headers: { 
@@ -77,17 +77,19 @@ export default function CaseDetailWorkspace() {
         })
       });
 
-      if (response.ok) {
+      if (response.status === 201 || response.ok) {
         alert("Session indexed cleanly into workspace calendar arrays.");
         setMeetingDate('');
         setMeetingTime('');
         setMeetingNotes('');
-        fetchComprehensiveCaseMetrics(); // Refresh layout content state matrices
+        // Re-run the GET pull operation to instantly show the new row down inside history arrays
+        fetchComprehensiveCaseMetrics(); 
       } else {
         alert("Transaction aborted by backend scheduling validation filters.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Scheduling transaction network failure: ", err);
+      alert("Network communication crash during submission run queues.");
     } finally {
       setScheduling(false);
     }
@@ -121,7 +123,6 @@ export default function CaseDetailWorkspace() {
     );
   }
 
-  // 🛡️ RE-MAPPED TO NEW INCOMING NESTED SCHEMAS FROM THE RECEIVED OBJECT
   const monthlyAbsences = caseData.metrics?.absences ?? 0;
   const socialIsolation = caseData.metrics?.isolation_score ?? 0;
   const gradeVariance = caseData.metrics?.grade_delta ?? 0;
@@ -160,7 +161,7 @@ export default function CaseDetailWorkspace() {
       {/* Workspace Matrix Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         
-        {/* Left Column Span (2 Blocks): Internal Metadata logs & Visual Indicator Dashboards */}
+        {/* Left Column Span (2 Blocks) */}
         <div className="lg:col-span-2 space-y-8">
           
           {/* Dynamic Visual Indicator Tracking Dashboard Canvas Bar Panel */}
@@ -249,7 +250,7 @@ export default function CaseDetailWorkspace() {
               <span className="text-[9px] font-bold text-slate-400 uppercase border border-slate-800 px-2 py-0.5 rounded-md bg-slate-950">Deterministic Mode</span>
             </div>
 
-            <p className="text-xs leading-relaxed text-slate-300 font-medium whitespace-pre-line bg-slate-950/40 p-4 rounded-xl border border-slate-800/60 font-sans">
+            <p className="text-xs leading-relaxed text-slate-300 font-medium whitespace-pre-line bg-slate-950/40 p-4 rounded-xl border border-slate-800/60 font-sans mt-4">
               {caseData.ai_analysis || caseData.raw_intake_notes || "No algorithmic diagnostic evaluations generated for this record profile node."}
             </p>
           </div>
@@ -267,7 +268,7 @@ export default function CaseDetailWorkspace() {
 
         </div>
 
-        {/* Right Column Span (1 Block): Clinical Calendar Intervention Planner Frame */}
+        {/* Right Column Span (1 Block) */}
         <div className="space-y-6">
           
           {/* Calendar Event Submission Card */}
@@ -333,7 +334,7 @@ export default function CaseDetailWorkspace() {
             </form>
           </div>
 
-          {/* List of Existing Logged Sessions for this Specific Student Node */}
+          {/* List of Existing Logged Sessions */}
           <div className="bg-white border border-stone-200/70 p-5 rounded-2xl shadow-sm space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center space-x-1.5">
               <Clock className="w-3.5 h-3.5 text-stone-400" />
@@ -363,9 +364,7 @@ export default function CaseDetailWorkspace() {
           </div>
 
         </div>
-
       </div>
-
     </div>
   );
 }
