@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-crvs-canvas: #FAF6F0; /* Warm OpenCRVS signature backdrop */
+  --color-crvs-navy: #1E1A34;   /* Deep charcoal/navy for ultra-readable text */
+  --color-crvs-blue: #0056D2;   /* Crisp functional primary action blue */
+  --color-crvs-blue-hover: #003EA3;
+  --color-crvs-coral: #FF6B57;  /* High-impact geometric brand accent */
+}
+
+/* Custom soft lighting animations to elevate transition interfaces */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
