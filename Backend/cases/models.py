@@ -26,7 +26,7 @@ class CaseFile(models.Model):
     beneficiary = models.OneToOneField(Beneficiary, on_delete=models.CASCADE, related_name='case_file')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='INTAKE', db_index=True)
     
-    # Scenario 1 & 2 quantitative variables
+    # quantitative variables
     monthly_absence_count = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     grade_average_delta = models.FloatField(default=0.0)  
     missed_counseling_appointments = models.IntegerField(default=0, validators=[MinValueValidator(0)])
@@ -48,7 +48,7 @@ class CaseFile(models.Model):
         if self.pk:
             old_status = CaseFile.objects.get(pk=self.pk).status
 
-        # 🔍 Hard Rule Triage Execution: Scenario 1 Thresholds
+
         # If absences exceed 7 days AND grade average delta shows a drop of 3 points or worse
         if self.monthly_absence_count > 7 and self.grade_average_delta <= -3.0:
             if self.status == 'INTAKE':
@@ -82,7 +82,6 @@ class CaseTimelineLog(models.Model):
 
 
 class CaseMeeting(models.Model):
-    # Change rel_name='meetings' to related_name='meetings'
     case_file = models.ForeignKey('CaseFile', on_delete=models.CASCADE, related_name='meetings')
     counselor = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'Counselor'})
     title = models.CharField(max_length=255, default="Clinical Counseling Session")

@@ -29,7 +29,6 @@ class CaseFileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """
-        🛡️ Track B Security Filter Layer.
         Dynamically redacts qualitative fields unless the authorized user is a Counselor.
         """
         representation = super().to_representation(instance)
