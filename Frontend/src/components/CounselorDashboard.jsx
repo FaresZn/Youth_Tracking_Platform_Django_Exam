@@ -25,16 +25,22 @@ export default function CounselorDashboard() {
   }, [navigate]);
 
   const fetchCounselorCases = async (token) => {
+    setLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:8000/api/cases/counselor/cases/', {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setCases(Array.isArray(data) ? data : []);
-      }
+      
+      if (!response.ok) throw new Error("Server responded with error");
+      
+      const data = await response.json();
+      // Injecting a fallback: if data is not an array, set to empty to prevent crashes
+      setCases(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to stream tactical case file matrix:", err);
+      console.error("Failure Case Triggered:", err);
+      setCases([]); // Fail gracefully by showing no cases
+    } finally {
+      setLoading(false);
     }
   };
 
